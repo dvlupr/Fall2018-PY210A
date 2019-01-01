@@ -1,123 +1,134 @@
 #!/usr/bin/env python3
 
+"""
+A class-based system for rendering html.
+"""
 
-class Element:
-    tag = "html"
-    indent = "    "
 
+# This is the framework for the base class
+class Element(object):
+    indent = '    '
+    tag = 'html'
 
     def __init__(self, content=None, **kwargs):
         if content is None:
-            self.contents = []
+            self.content = []
         else:
-            self.contents = [content]
+            self.content = [content]
+        self.attrs = dict(**kwargs)
 
-        self.attributes = ''.join(' {} = "{}"'.format(k, v)
-            for k, v in kwargs.items())
+    def append(self, new_content):
+        self.content.append(new_content)
 
+    def _open_tag(self):
+        if self.attrs is None:
+            return f"<{self.tag}>\n"
+        else:
+            open_tag = f"<{self.tag}"
+            for tag, attribute in self.attrs.items():
+                open_tag += f' {tag}="{attribute}"'
+            open_tag += ">\n"
+            return open_tag
 
-    def append(self, content):
-        self.contents.append(content)
+    def _close_tag(self):
+        return f"</{self.tag}>\n"
 
+    def render(self, out_file, cur_ind=""):
+        out_file.write(cur_ind + self._open_tag())
 
-    def render(self, out_file, indent = ''):
-        out_file.write('<{}>\n'.format(self.tag))
-
-        for line in self.contents:
-            out_file.write(line)
-            out_file.write('\n')
-
-        out_file.write('</{}>\n'.format(self.tag))
+        for content in self.content:
+            try:
+                content.render(out_file, cur_ind + self.indent)
+            except AttributeError:
+                out_file.write(f"{cur_ind + self.indent}{content}\n")
+                out_file.write(cur_ind + self._close_tag())
 
 
 class Html(Element):
-    tag = 'html'
+    tag = "html"
 
-    def render(self, file_out, indent=""):
-        file_out.write('<!DOCTYPE html>\n')
-        Element.render(self, file_out, indent)
+    def render(self, out_file, cur_ind=""):
+        out_file.write(cur_ind + "<!DOCTYPE html>\n")
+    super().render(out_file, cur_ind)
 
 
 class Body(Element):
-    tag = 'body'
+    tag = "body"
 
 
 class P(Element):
-    tag = 'p'
+    tag = "p"
 
 
 class Head(Element):
-    tag = 'head'
-
-
-class OneLineTag(Element):
-    tag = ''
-
-    def render(self, file_out, indent=""):
-        file_out.write('{}<{}{}>{}</{}>\n'.format(indent, self.tag, self.attributes, self.contents[0], self.tag))
-
-
-class Title(OneLineTag):
-    tag = 'title'
-
-
-class A(OneLineTag):
-    tag = 'a'
-
-    def __init__(self, html_address, text):
-        OneLineTag.__init__(self, text, a=html_address)
+    tag = "head"
 
 
 class Ul(Element):
-    tag = 'u1'
+    tag = "ul"
 
 
 class Li(Element):
-    tag = 'li'
+    tag = "li"
+
+
+class OneLineTag(Element):
+    def render(self, out_file, cur_ind=""):
+        if self.attrs is None:
+            out_file.write(f"{cur_ind}<{self.tag}>{self.content[0]}</{self.tag}>\n")
+        else:
+            out_file.write(f"{cur_ind}<{self.tag}")
+            for tag, attribute in self.attrs.items():
+                out_file.write(f' {tag}="{attribute}"')
+            out_file.write(f">{self.content[0]}</{self.tag}>\n")
+
+    def append(self, new_content):
+        raise NotImplementedError("You cannot add content to a OneLineTag")
+
+
+class A(OneLineTag):
+    tag = "a"
+
+    def __init__(self, link, content=None, **kwargs):
+        kwargs['href'] = link
+        super().__init__(content, **kwargs)
 
 
 class H(OneLineTag):
-    """
-    subclass for H tag from one line tag
-    """
-    def __init__(self, h_counter, header):
-        self.tag = u'h' + str(h_counter)
-        Element.__init__(self, header)
+    def __init__(self, num, content=None, **kwargs):
+        header_tag = "h" + str(num)
+
+        super().__init__(content, **kwargs)
+        self.tag = header_tag
 
 
 class SelfClosingTag(Element):
-    """
-    subclass for closing tag from element
-    """
-    def render(self, file_out, indent=""):
-        file_out.write('{}<{}{} />\n'.format(indent, self.tag, self.attributes))
+    def __init__(self, content=None, **kwargs):
+        if content:
+            raise TypeError("SelfClosingTag can not contain any content.")
+        super().__init__(content, **kwargs)
+
+    def append(self, new_content):
+        if new_content:
+            raise TypeError("You can not add content to a SelfClosingTag")
+
+    def render(self, out_file):
+        if self.attrs is None:
+            out_file.write(f"{cur_ind}<{self.tag} />\n")
+        else:
+            out_file.write(f"{cur_ind}<{self.tag}")
+            for tag, attribute in self.attrs.items():
+                out_file.write(f' {tag}="{attribute}"')
+            out_file.write(" />\n")
 
 
 class Hr(SelfClosingTag):
-    """
-    subclass for hr closing from self closing tag
-    """
-    tag = 'hr'
+    tag = "hr"
 
 
 class Br(SelfClosingTag):
-    """
-    subclass for break from self closing tag
-    """
-    tag = 'br'
+    tag = "br"
 
 
 class Meta(SelfClosingTag):
-    """
-    subclass for meta from self closing tag
-    """
-    tag = 'meta'
-
-
-"""
-Creating classes
-"""
-
-e = Element()
-e = Element('hello')
-print(e)
+    tag = "meta"

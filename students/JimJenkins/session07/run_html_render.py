@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
 
-"""
-a simple script can run and test your html rendering classes.
-
-Uncomment the steps as you add to your rendering.
-
-"""
-
 from io import StringIO
 
 # importing the html_rendering code with a short name for easy typing.
