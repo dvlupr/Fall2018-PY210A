@@ -13,9 +13,7 @@ def render_result(element, ind=""):
         element.render(outfile)
     return outfile.getvalue()
 
-########
-# Step 1
-########
+# step 1
 
 def test_init():
     e = Element()
@@ -42,9 +40,7 @@ def test_render_element():
     assert file_contents.endswith("</html>")
 
 
-########
-# Step 2
-########
+#Step 2
 
 def test_html():
     e = Html("this is some text")

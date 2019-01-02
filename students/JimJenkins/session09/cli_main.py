@@ -8,49 +8,53 @@ Description: menu for mail room.
 """
 
 import sys
-
-from .mailroom import Donor, Donor_collection
-
-#menu system
-menu = {}
-menu['1'] = 'Send a thank you'
-menu['2'] = 'Create a Report'
-menu['3'] = 'Quit'
+from textwrap3 import dedent
+#from .mailroom import Donor, Donor_collection
 
 
-
-#TODO refactor
-while True:
-    options = menu.keys()
-
-    for entry in options:
-        print(entry, menu[entry])
-    print(' ')
-    selection = input("Please select an option number: ")
-    print(' ')
-    if selection == '1' :
-        donor_thankyou_letter()
-        break
-    elif selection == '2':
-        #create_report()
-        break
-    elif selection == '3':
-        quit()
-        break
+def menu_selection():
+    user_selection = input('Please indicate what you\'d like to do:\n'
+                                  '1 - Send a Thank You\n'
+                                  '2 - Create a Report\n'
+                                  '3 - Send Letters to All Donors\n'
+                                  '4 - Quit\n'
+                                  'Selection: ')
+    if user_selection is '1':
+        thanks()
+    elif user_selection is '2':
+        create_report()
+    elif user_selection is '3':
+        write_letters_to_disk()
     else:
-        print('Unknown option selected')
-        print(' ')
+        exit()
+
+
+def thanks():
+    print('executing - thanks')
+
+
+def create_report():
+    print('executing - create_report')
+
+
+def write_letters_to_disk():
+    print('executing - write_letters_to_disk')
+
 
 def quit():
-    sys.exit(0)
+    sys.exit()
 
 
-if __name__ == '__main__':
-    main()
+selection_dict = {"1": thanks, "2": create_report, "3": write_letters_to_disk, "4": quit}
 
 
+menu_selection()
+
+# if __name__ == "__main__":
+#  main()
 
 
+#    donors = get_sample_donors()
 
-
+#    prepare_to_run()
 
